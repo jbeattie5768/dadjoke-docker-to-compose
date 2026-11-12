@@ -1,5 +1,5 @@
 
-![Architecture](docs/images/architecture.png)
+![Architecture](docs/images/architecture-compose.png)
 
 ||Manual|Compose|
 |---|---|---|
