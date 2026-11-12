@@ -1,0 +1,22 @@
+name: dadjoke
+
+services:
+  fetcher:
+    build: ../app
+    image: dadjoke-fetcher:1.0.0
+    volumes:
+      - html:/html
+    restart: unless-stopped
+
+  web:
+    image: nginx:1.31.8
+    ports:
+      - "80:80"
+    volumes:
+      - html:/usr/share/nginx/html:ro
+    depends_on:
+      - fetcher
+    restart: unless-stopped
+
+volumes:
+  html:
