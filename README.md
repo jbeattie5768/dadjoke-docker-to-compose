@@ -1,4 +1,6 @@
 
+![Architecture](docs/images/architecture.png)
+
 ||Manual|Compose|
 |---|---|---|
 |Start|5 commands, in the right order|`docker compose up -d --build`|
