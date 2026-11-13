@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:  # manual "Run workflow" button
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ShellCheck
+        run: |
+          command -v shellcheck >/dev/null || { sudo apt-get update && sudo apt-get install -y shellcheck; }
+          shellcheck app/*.sh 01-manual/*.sh   # nktos/act's runner image lacks shellcheck
+      - name: Hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: app/Dockerfile
+
+      - name: Validate compose file
+        run: docker compose -f 02-compose/compose.yaml config -q
+
+  smoke-test:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start stack
+        working-directory: 02-compose
+        run: docker compose up -d --build
+
+      - name: Check page is served
+        run: |
+          for _ in $(seq 1 10); do
+            curl -fs localhost | grep -q "Dad Joke Dashboard" && echo "OK" && exit 0
+            sleep 3
+          done
+          echo "Page never came up"; exit 1
+
+      - name: Show logs on failure
+        if: failure()
+        working-directory: 02-compose
+        run: docker compose logs
+
+      - name: Tear down
+        if: always()
+        working-directory: 02-compose
+        run: docker compose down -v
