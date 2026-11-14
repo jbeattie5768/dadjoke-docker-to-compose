@@ -1,0 +1,21 @@
+name: dadjoke
+
+services:
+  fetcher:
+    image: ghcr.io/jbeattie5768/dadjoke-fetcher:1.0.0@sha256:d8452a799a5294c8a58faa8d5e417213633bed8fc33d56c94dc089e384e5031d
+    volumes:
+      - html:/html
+    restart: unless-stopped
+
+  web:
+    image: nginx:1.31.8
+    ports:
+      - "80:80"
+    volumes:
+      - html:/usr/share/nginx/html:ro
+    depends_on:
+      - fetcher
+    restart: unless-stopped
+
+volumes:
+  html:
